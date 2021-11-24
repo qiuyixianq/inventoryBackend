@@ -1,4 +1,5 @@
 import { items } from "../TestData/items"
+import { Items } from "./Types";
 
 //*similar concept on redux reducers
 export const resolvers = {
@@ -22,7 +23,7 @@ export const resolvers = {
     Mutation: {
         //Create
         addItem: (parent, args) => {
-            const newItem = args;
+            const newItem : Items = args;
             //mongo
             items.push(newItem);
             return newItem;
@@ -32,20 +33,20 @@ export const resolvers = {
         addMinusItemQuantity: (parent, args) => {
             const { id, quantity } = args;
             //mongo
-            const updatedItem = items.filter(item => item.id === id);
+            const updatedItem : Array<Items> = items.filter(item => item.id === id);
             updatedItem[0].quantity += quantity;
             return updatedItem[0]
         },
 
         deleteItem: (parent, args) => {
             const { id } = args;
-            const updatedItems = items.filter(item => item.id !== id);
+            const updatedItems : Array<Items> = items.filter(item => item.id !== id);
             return updatedItems;
         },
 
         modifyItem: (parent, args) => {
             const { id, name, brand, price, quantity } = args;
-            const index = items.findIndex(item => item.id === id);
+            const index : number = items.findIndex(item => item.id === id);
             if(name) items[index].name = name;
             if(brand) items[index].brand = brand;
             if(price) items[index].price = price;
