@@ -31,7 +31,7 @@ export const items = [
         name: 'HP Monitor M22F',
         id: 104,
         brand: 'HP',
-        price: 303.90,
+        price: 700.90,
         quantity: 10,
     },
 ];
