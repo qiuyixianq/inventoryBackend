@@ -1,96 +1,130 @@
-import { items } from "../TestData/items"
-import { transactions } from "../TestData/transaction";
-import { Items, Transactions } from "./Types";
+import { ItemModel } from "../mongoModel/item_model";
+import { TransactionModel } from "../mongoModel/transaction_model";
+import { CounterModel } from "../mongoModel/counter_model";
+
 
 //*similar concept on redux reducers
 export const resolvers = {
     Query: {
-        getAllItems: () => {
+        getAllItems: async () => {
+            const items = await ItemModel.find();
             return items;
         },
 
-        getItemsByName: (parent, args) => {
-            const filteredItem : Array<Items> = items.filter(item => item.name === args.name);
-            return filteredItem;
+        getItemsByName: async (parent, args) => {
+            const itemsByName = await ItemModel.find({ "name": { "$regex": args.name, "$options": "i" } })
+            return itemsByName;
         },
 
-        getItemsByFilter: (parent, args) => {
-            const { name, id, brand, price, quantity } 
-            : { name:string, id:number, brand:string, price:number, quantity:number } = args;
-            
-            //will do straight with mongoDB no need sakit kepala
-            //return dummy first
-            return items;
+        getItemsByFilter: async (parent, args) => {
+            const { name, id, brand, price, quantity }
+                : { name: string, id: number, brand: string, price: number, quantity: number } = args;
+
+            const itemsByFilter = await ItemModel.find({
+                "name": { "$regex": name ? name : '', "$options": "i" },
+                "id": id ? id : { $gte: 0 },
+                "brand": { "$regex": brand ? brand : '', "$options": "i" },
+                "price": price ? price : { $gte: 0 },
+                "quantity": quantity ? quantity : { $gte: 0 },
+
+            });
+            return itemsByFilter;
+            //$regex $options $gte(>=) by mongoDB, !=mongoose.
+            //https://data-flair.training/blogs/mongodb-regular-expression-regex/
         },
 
-        getAllTransactions: () => {
-            return transactions;
+        getAllTransactions: async () => {
+            const allTransactions = await TransactionModel.find();
+            return allTransactions;
         },
 
-        getTransactionById: (parent, args) => {
-            const { transId } : { transId:number } = args;
-            return transactions[transactions.findIndex(trans => trans.transId === transId)];
+        getTransactionById: async (parent, args) => {
+            const { transId }: { transId: number } = args;
+            const transaction = await TransactionModel.findOne({ transId });
+            return transaction
         },
 
-        getTransactionByFilter: (parent, args) => {
-            const { itemId, brand, date } : { itemId:number, brand:string, date:string } = args
-            return transactions;
-        }
-        
+        getTransactionByFilter: async (parent, args) => {
+            const { itemId, brand, date }: { itemId: number, brand: string, date: string } = args
+
+            const transactionsByFilter = await TransactionModel.find({
+                "itemId": itemId ? itemId : { $gte: 0 },
+                "brand": { "$regex": brand ? brand : '', "$options": "i" },
+                "date": { "$regex": date ? date : '', "$options": "i" },
+            })
+
+            return transactionsByFilter;
+        },
+
+
+
     },
 
     Mutation: {
         //Create
-        addItem: (parent, args) => {
-            const newItem : Items = args;
-            //mongo
-            items.push(newItem);
-            return newItem;
+        addItem: async (parent, args) => {
+            const { name, brand, price, quantity }: { name: string, id: number, brand: string, price: number, quantity: number } = args
+
+            //fetch counter.item
+            const counter = await CounterModel.findOneAndUpdate({}, { $inc: { item: 1 } }, { new: true });
+            let mongoItem
+            if(counter){
+                mongoItem = new ItemModel({
+                    name, id: counter.item, brand, price, quantity
+                });
+            }
+
+            await mongoItem.save()
+            return mongoItem;
         },
 
         //Update
-        addMinusItemQuantity: (parent, args) => {
-            const { id, quantity } : { id:number, quantity:number } = args;
-            //mongo
-            const updatedItem : Array<Items> = items.filter(item => item.id === id);
-            updatedItem[0].quantity += quantity;
+        addMinusItemQuantity: async (parent, args) => {
+            const { id, quantity }: { id: number, quantity: number } = args;
 
-            if(quantity < 0){
-                const newTransaction : Transactions = {
-                    name: updatedItem[0].name,
-                    itemId: updatedItem[0].id,
-                    transId: 999,
-                    brand: updatedItem[0].brand,
-                    price: updatedItem[0].price,
-                    quantity: quantity * -1,
-                    date: new Date().toString(),
+            try {
+                const item = await ItemModel.findOneAndUpdate({ id }, { $inc: { quantity: quantity } }, { new: true });
+
+                //is Sell; create transaction
+                if (quantity < 0 && item) {
+                    const counter = await CounterModel.findOneAndUpdate({}, { $inc: { transaction: 1 } }, { new: true });
+
+                    if (counter) {
+                        const newTransaction = new TransactionModel({
+                            name: item.name,
+                            itemId: item.id,
+                            transId: counter.transaction,
+                            brand: item.brand,
+                            price: item.price,
+                            quantity: quantity * -1,
+                            date: new Date().toDateString(),
+                        })
+                        await newTransaction.save();
+                    }
                 }
-                transactions.push(newTransaction);
-            }
+                return item
 
-            return updatedItem[0]
+
+            } catch (err) { console.log(err) }
         },
-        
-        modifyItem: (parent, args) => {
-            const { id, name, brand, price, quantity } : { id:number, name:string, brand:string, price:number, quantity:number } = args;
-            const index : number = items.findIndex(item => item.id === id);
-            if(name) items[index].name = name;
-            if(brand) items[index].brand = brand;
-            if(price) items[index].price = price;
-            if(quantity) items[index].quantity = quantity;
-            return items[index];
+
+        modifyItem: async (parent, args) => {
+            const { id, name, brand, price, quantity }: { id: number, name: string, brand: string, price: number, quantity: number } = args;
+
+            const updatedItem = await ItemModel.findOneAndUpdate({ id }, { name, brand, price, quantity }, { new: true })
+            return updatedItem;
         },
 
         //Delete
-        deleteItem: (parent, args) => {
-            const { id } : { id:number } = args;
-            const updatedItems : Array<Items> = items.filter(item => item.id !== id);
-            return updatedItems;
+        deleteItem: async (parent, args) => {
+            const { id }: { id: number } = args;
+            const deletedItems = await ItemModel.findOneAndDelete({ id });
+            return deletedItems;
         },
     }
 }
 
-/* 
+/*
     docs:  https://www.apollographql.com/docs/apollo-server/data/resolvers/
     func args:
     parent - return value of resolver for this field's parent (the prev rsolver in chain)

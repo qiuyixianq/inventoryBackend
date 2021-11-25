@@ -19,6 +19,11 @@ export const typeDefs = gql`
         date: String!,
     }
 
+    type Counter {
+        item: Int!,
+        transaction: Int!,
+    }
+
     #Queries
     type Query {
         #Read
@@ -32,10 +37,10 @@ export const typeDefs = gql`
             quantity: Int
         ): [Items!]!
 
-        getAllTransactions : [Transactions!]!
+        getAllTransactions: [Transactions!]!
         getTransactionById( transId:Int! ) : Transactions!
         getTransactionByFilter( itemId:Int, brand:String, date:String) : [Transactions!]!
-        
+
     }
 
     #Mutations
@@ -43,7 +48,6 @@ export const typeDefs = gql`
         #Create
         addItem( 
             name: String!, 
-            id: Int!, 
             brand: String!, 
             price: Float!,
             quantity: Int!,
@@ -53,14 +57,14 @@ export const typeDefs = gql`
         addMinusItemQuantity( id: Int!, quantity: Int! ) : Items!
         modifyItem( 
             id: Int!, 
-            name: String, 
-            brand: String, 
-            price: Float,
-            quantity: Int,
+            name: String!, 
+            brand: String!, 
+            price: Float!,
+            quantity: Int!,
         ) : Items!
 
         #Delete
-        deleteItem( id: Int! ) : [Items!]!
+        deleteItem( id: Int! ) : Items!
     }
 `;
 

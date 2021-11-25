@@ -16,3 +16,7 @@ export type Transactions = {
     date: string,
 }
 
+export type Counter = {
+    item: number,
+    transaction: number,
+}
