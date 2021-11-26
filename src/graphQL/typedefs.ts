@@ -33,8 +33,10 @@ export const typeDefs = gql`
             name: String
             id: Int
             brand: String
-            price: Float
-            quantity: Int
+            priceFrom: Float
+            priceTo: Float
+            quantityFrom: Int
+            quantityTo: Int
         ): [Items!]!
 
         getAllTransactions: [Transactions!]!

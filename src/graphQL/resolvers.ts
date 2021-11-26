@@ -1,7 +1,7 @@
 import { ItemModel } from "../mongoModel/item_model";
 import { TransactionModel } from "../mongoModel/transaction_model";
 import { CounterModel } from "../mongoModel/counter_model";
-
+import { handlePrice, handleQuantity } from "./externalHandler";
 
 //*similar concept on redux reducers
 export const resolvers = {
@@ -17,16 +17,15 @@ export const resolvers = {
         },
 
         getItemsByFilter: async (parent, args) => {
-            const { name, id, brand, price, quantity }
-                : { name: string, id: number, brand: string, price: number, quantity: number } = args;
+            const { name, id, brand, priceFrom, priceTo, quantityFrom, quantityTo }
+                : { name: string, id: number, brand: string, priceFrom: number, priceTo: number, quantityFrom: number, quantityTo: number } = args;
 
             const itemsByFilter = await ItemModel.find({
                 "name": { "$regex": name ? name : '', "$options": "i" },
                 "id": id ? id : { $gte: 0 },
                 "brand": { "$regex": brand ? brand : '', "$options": "i" },
-                "price": price ? price : { $gte: 0 },
-                "quantity": quantity ? quantity : { $gte: 0 },
-
+                "price": handlePrice(priceFrom,priceTo),
+                "quantity": handleQuantity(quantityFrom,quantityTo),
             });
             return itemsByFilter;
             //$regex $options $gte(>=) by mongoDB, !=mongoose.
