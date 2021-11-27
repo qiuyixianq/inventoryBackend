@@ -16,7 +16,7 @@ export const typeDefs = gql`
         brand: String!,
         price: Float!,
         quantity: Int!,
-        date: String!,
+        date: Float!,
     }
 
     type Counter {
@@ -41,7 +41,7 @@ export const typeDefs = gql`
 
         getAllTransactions: [Transactions!]!
         getTransactionById( transId:Int! ) : Transactions!
-        getTransactionByFilter( itemId:Int, brand:String, date:String) : [Transactions!]!
+        getTransactionByFilter( itemId:Int, brand:String, dateFrom:Float, dateTo:Float) : [Transactions!]!
 
     }
 

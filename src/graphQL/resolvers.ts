@@ -1,7 +1,7 @@
 import { ItemModel } from "../mongoModel/item_model";
 import { TransactionModel } from "../mongoModel/transaction_model";
 import { CounterModel } from "../mongoModel/counter_model";
-import { handlePrice, handleQuantity } from "./externalHandler";
+import { handlePrice, handleQuantity, handleDate } from "./externalHandler";
 
 //*similar concept on redux reducers
 export const resolvers = {
@@ -44,12 +44,12 @@ export const resolvers = {
         },
 
         getTransactionByFilter: async (parent, args) => {
-            const { itemId, brand, date }: { itemId: number, brand: string, date: string } = args
+            const { itemId, brand, dateFrom, dateTo }: { itemId: number, brand: string, dateFrom:number, dateTo:number } = args
 
             const transactionsByFilter = await TransactionModel.find({
                 "itemId": itemId ? itemId : { $gte: 0 },
                 "brand": { "$regex": brand ? brand : '', "$options": "i" },
-                "date": { "$regex": date ? date : '', "$options": "i" },
+                "date": handleDate(dateFrom, dateTo)
             })
 
             return transactionsByFilter;
@@ -96,7 +96,7 @@ export const resolvers = {
                             brand: item.brand,
                             price: item.price,
                             quantity: quantity * -1,
-                            date: new Date().toDateString(),
+                            date: new Date().setHours(0,0,0,0),
                         })
                         await newTransaction.save();
                     }

@@ -13,7 +13,7 @@ export type Transactions = {
     brand: string,
     price: number,
     quantity: number,
-    date: string,
+    date: number,
 }
 
 export type Counter = {

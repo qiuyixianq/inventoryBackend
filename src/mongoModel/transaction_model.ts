@@ -33,7 +33,7 @@ const TransactionSchema = new Schema<Transactions>({
     },
 
     date: {
-        type: String,
+        type: Number,
         required: true,
     }
 });
