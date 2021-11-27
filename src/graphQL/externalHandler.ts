@@ -16,5 +16,5 @@ export const handleDate = (dateFrom, dateTo) => {
     if(dateFrom && !dateTo) return { "$gte": dateFrom }
     if(dateFrom && dateTo) return { "$gte": dateFrom , "$lte": dateTo }
     if(!dateFrom && dateTo) return { "$lte": dateTo }
-    return { "$gte": '0' }
+    return { "$gte": 0 }
 }

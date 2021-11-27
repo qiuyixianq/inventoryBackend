@@ -49,9 +49,10 @@ export const resolvers = {
             const transactionsByFilter = await TransactionModel.find({
                 "itemId": itemId ? itemId : { $gte: 0 },
                 "brand": { "$regex": brand ? brand : '', "$options": "i" },
-                "date": handleDate(dateFrom, dateTo)
+                "date": handleDate(dateFrom - 86400000, dateTo )
             })
-
+            //864... in ms === 24hrs. 
+            //case: when user choose from date 25th the specific date need to included
             return transactionsByFilter;
         },
 
