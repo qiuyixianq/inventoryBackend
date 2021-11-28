@@ -44,13 +44,16 @@ export const resolvers = {
         },
 
         getTransactionByFilter: async (parent, args) => {
-            const { itemId, brand, dateFrom, dateTo }: { itemId: number, brand: string, dateFrom:number, dateTo:number } = args
+            const { transId, itemId, brand, dateFrom, dateTo }: { transId:number, itemId: number, brand: string, dateFrom:number, dateTo:number } = args
 
             const transactionsByFilter = await TransactionModel.find({
+                "transId": transId ? { "$lt": transId } : { "$gte": 0 },
                 "itemId": itemId ? itemId : { $gte: 0 },
                 "brand": { "$regex": brand ? brand : '', "$options": "i" },
                 "date": handleDate(dateFrom - 86400000, dateTo )
             })
+            .sort({ "transId": -1 })
+            .limit(5)
             //864... in ms === 24hrs. 
             //case: when user choose from date 25th the specific date need to included
             return transactionsByFilter;

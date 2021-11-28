@@ -41,7 +41,7 @@ export const typeDefs = gql`
 
         getAllTransactions: [Transactions!]!
         getTransactionById( transId:Int! ) : Transactions!
-        getTransactionByFilter( itemId:Int, brand:String, dateFrom:Float, dateTo:Float) : [Transactions!]!
+        getTransactionByFilter( transId:Int ,itemId:Int, brand:String, dateFrom:Float, dateTo:Float) : [Transactions!]!
 
     }
 
