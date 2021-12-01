@@ -39,6 +39,7 @@ export const typeDefs = gql`
             quantityTo: Int
         ): [Items!]!
 
+
         getAllTransactions: [Transactions!]!
         getTransactionById( transId:Int! ) : Transactions!
         getTransactionByFilter( transId:Int ,itemId:Int, brand:String, dateFrom:Float, dateTo:Float) : [Transactions!]!
